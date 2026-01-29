@@ -1,0 +1,139 @@
+<div class="space-y-6">
+    
+    <section class="bg-gray-900/80 backdrop-blur-md border border-gray-700 rounded-xl p-6 shadow-lg">
+        <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <span>👤</span> Crear Nuevo Usuario
+        </h2>
+        
+        <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-gray-400 text-sm mb-1">Nombre *</label>
+                    <input type="text" formControlName="name" maxlength="20" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-violet-500 focus:outline-none">
+                    <p *ngIf="userForm.get('name')?.touched && userForm.get('name')?.invalid" class="text-red-500 text-xs mt-1">Nombre requerido (sin números)</p>
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm mb-1">Apellido *</label>
+                    <input type="text" formControlName="surname" maxlength="20" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-violet-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-gray-400 text-sm mb-1">Usuario *</label>
+                    <input type="text" formControlName="username" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-violet-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm mb-1">Email *</label>
+                    <input type="email" formControlName="email" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-violet-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-gray-400 text-sm mb-1">Contraseña *</label>
+                    <input type="password" formControlName="password" placeholder="Mín. 8 caracteres, 1 mayús, 1 número" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-violet-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm mb-1">Repetir Contraseña *</label>
+                    <input type="password" formControlName="confirmPassword" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-violet-500 focus:outline-none">
+                    @if (userForm.get('confirmPassword')?.touched && userForm.value.password !== userForm.value.confirmPassword) {
+                        <p class="text-red-500 text-xs mt-1">Las contraseñas no coinciden</p>
+                    }
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm mb-1">Fecha de Nacimiento *</label>
+                    <input type="date" formControlName="birthdate" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-violet-500 focus:outline-none">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-gray-400 text-sm mb-1">Descripción</label>
+                    <textarea formControlName="description" rows="2" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-violet-500 focus:outline-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-gray-400 text-sm mb-1">Foto de Perfil</label>
+                    <input type="file" id="fileInput" (change)="onFileSelected($event)" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-violet-600 file:text-white hover:file:bg-violet-700"/>
+                </div>
+
+                <div class="flex items-end pb-2">
+                    <div class="flex gap-4 bg-gray-800 px-4 py-2 rounded-lg border border-gray-700">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" formControlName="role" value="usuario" class="accent-violet-500 h-4 w-4">
+                            <span class="text-gray-300 text-sm">Usuario</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" formControlName="role" value="administrador" class="accent-violet-500 h-4 w-4">
+                            <span class="text-gray-300 text-sm">Admin</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end mt-4">
+                <button type="submit" [disabled]="userForm.invalid" 
+                    class="bg-violet-600 hover:bg-violet-700 text-white font-semibold px-6 py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
+                    Crear Usuario
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <section class="bg-gray-900/80 backdrop-blur-md border border-gray-700 rounded-xl overflow-hidden shadow-lg">
+        <div class="p-6 border-b border-gray-700">
+            <h2 class="text-xl font-bold text-white">Listado de Usuarios</h2>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-gray-300">
+                <thead class="bg-gray-800 text-gray-400 uppercase text-xs font-semibold">
+                    <tr>
+                        <th class="px-6 py-3">Usuario</th>
+                        <th class="px-6 py-3">Email</th>
+                        <th class="px-6 py-3">Rol</th>
+                        <th class="px-6 py-3">Estado</th>
+                        <th class="px-6 py-3 text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-700">
+                    @for (user of users; track user._id) {
+                        <tr class="hover:bg-gray-800/50 transition">
+                            <td class="px-6 py-4 font-medium text-white">{{ user.username }}</td>
+                            <td class="px-6 py-4">{{ user.email }}</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 rounded text-xs font-semibold"
+                                    [class.bg-purple-900]="user.role === 'administrador'"
+                                    [class.text-purple-300]="user.role === 'administrador'"
+                                    [class.bg-gray-700]="user.role !== 'administrador'"
+                                    [class.text-gray-300]="user.role !== 'administrador'">
+                                    {{ user.role | role }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span [appStatusBadge]="user.isActive">
+                                    <span class="w-2 h-2 rounded-full" [class.bg-green-400]="user.isActive" [class.bg-red-400]="!user.isActive"></span>
+                                    {{ user.isActive ? 'Activo' : 'Inactivo' }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                @if (user.isActive) {
+                                    <button (click)="toggleUserStatus(user)" class="text-red-400 hover:text-red-300 text-sm font-medium hover:underline">
+                                        Deshabilitar
+                                    </button>
+                                } @else {
+                                    <button (click)="toggleUserStatus(user)" class="text-green-400 hover:text-green-300 text-sm font-medium hover:underline">
+                                        Habilitar
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    @empty {
+                        <tr>
+                            <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                No hay usuarios registrados.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div>

@@ -1,0 +1,193 @@
+<div class="min-h-screen flex bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+    <div class="w-64 shrink-0">
+        <app-nav class="fixed top-0 left-0 h-screen w-64"></app-nav>
+    </div>
+
+    <main class="flex-1 p-6 overflow-y-auto max-h-screen">
+        <div class="max-w-4xl mx-auto">
+
+            <div class="mb-8">
+                <h1 class="text-4xl font-bold text-violet-400 mb-6">Publicaciones</h1>
+                
+                <!-- Barra de controles: ordenamiento y filtros -->
+                <div class="bg-gray-900/80 backdrop-blur-md rounded-xl p-4 border border-gray-700 flex flex-wrap gap-4 items-center justify-between">
+                    <!-- Selector de ordenamiento -->
+                    <div class="flex items-center gap-3">
+                        <label class="text-gray-300 font-semibold">Ordenar por:</label>
+                        <select 
+                            [(ngModel)]="sortBy"
+                            (change)="onSortChange()"
+                            class="bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer">
+                            <option value="date">Más recientes</option>
+                            <option value="likes">Más gustados</option>
+                        </select>
+                    </div>
+
+                    <!-- Boton crear publicacion -->
+                    <button 
+                        (click)="openCreatePostModal()"
+                        class="bg-violet-600 hover:bg-violet-700 text-white font-semibold px-6 py-2 rounded-lg transition flex items-center gap-2">
+                        <span>➕</span>
+                        <span>Nueva publicación</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading spinner -->
+            @if (isLoading) {
+                <div class="flex justify-center items-center py-20">
+                    <svg class="animate-spin h-12 w-12 text-violet-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                </div>
+            }
+
+            <!-- Lista de publicaciones -->
+            @if (!isLoading && publications.length > 0) {
+                <div class="space-y-6 mb-8">
+                    @for (publication of publications; track publication._id) {
+                        <app-publication-card
+                            [publication]="publication"
+                            [currentUserId]="currentUserId"
+                            [isAdmin]="isAdmin"
+                            (onLike)="darLike($event)"
+                            (onUnlike)="quitarLike($event)"
+                            (onDelete)="manejarBorrar($event)">
+                        </app-publication-card>
+                    }
+                </div>
+
+                <!-- Paginación -->
+                <div class="mt-8 pb-8 flex justify-center items-center gap-4">
+                    <button 
+                        (click)="paginaAnterior()"
+                        [disabled]="currentPage === 1"
+                        class="bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg transition font-semibold">
+                        ← Anterior
+                    </button>
+                    
+                    <span class="text-gray-300 font-semibold">
+                        Página {{ currentPage }} de {{ totalPages }}
+                    </span>
+                    
+                    <button 
+                        (click)="paginaSiguiente()"
+                        [disabled]="currentPage === totalPages"
+                        class="bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg transition font-semibold">
+                        Siguiente →
+                    </button>
+                </div>
+            }
+
+            <!-- Estado vacio -->
+            @if (!isLoading && publications.length === 0) {
+                <div class="text-center py-20">
+                    <div class="text-6xl mb-4">📭</div>
+                    <h2 class="text-2xl font-bold text-gray-400 mb-2">No hay publicaciones aún</h2>
+                    <p class="text-gray-500 mb-6">¡Sé el primero en compartir algo!</p>
+                    <button 
+                        (click)="openCreatePostModal()"
+                        class="bg-violet-600 hover:bg-violet-700 text-white font-semibold px-6 py-3 rounded-lg transition">
+                        Crear primera publicación
+                    </button>
+                </div>
+            }
+        </div>
+    </main>
+</div>
+
+<!-- Modal para crear publicación -->
+@if (showCreateModal) {
+    <div class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeCreatePostModal()">
+        <div class="bg-gray-900 rounded-2xl border border-gray-700 w-full max-w-2xl max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+            <!-- Header del modal -->
+            <div class="border-b border-gray-700 p-6 flex items-center justify-between sticky top-0 bg-gray-900 z-10">
+                <h2 class="text-2xl font-bold text-violet-400">Nueva Publicación</h2>
+                <button 
+                    (click)="closeCreatePostModal()"
+                    class="text-gray-400 hover:text-white transition text-2xl">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Formulario -->
+            <form [formGroup]="createPostForm" (ngSubmit)="onSubmitPost()" class="p-6 space-y-4">
+                <!-- Titulo -->
+                <div>
+                    <label class="block text-gray-300 mb-2 font-semibold">Título</label>
+                    <input
+                        type="text"
+                        formControlName="title"
+                        placeholder="¿Qué quieres compartir?"
+                        maxlength="25"
+                        class="w-full p-3 bg-gray-800 border border-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"/>
+                    @if (createPostForm.get('title')?.touched && createPostForm.get('title')?.invalid) {
+                        <p class="text-red-500 text-sm mt-1">El título es obligatorio (mínimo 3 caracteres)</p>
+                    }
+                </div>
+
+                <!-- Mensaje -->
+                <div>
+                    <label class="block text-gray-300 mb-2 font-semibold">Mensaje</label>
+                    <textarea
+                        formControlName="message"
+                        rows="5"
+                        placeholder="Escribe tu mensaje aquí..."
+                        maxlength="140"
+                        class="w-full p-3 bg-gray-800 border border-gray-700 text-white rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-violet-500"></textarea>
+                    @if (createPostForm.get('message')?.touched && createPostForm.get('message')?.invalid) {
+                        <p class="text-red-500 text-sm mt-1">El mensaje es obligatorio (mínimo 10 caracteres)</p>
+                    }
+                </div>
+
+                <!-- Imagen opcional -->
+                <div>
+                    <label class="block text-gray-300 mb-2 font-semibold">Imagen (opcional)</label>
+                    <input
+                        type="file"
+                        (change)="onFileSelected($event)"
+                        accept="image/*"
+                        class="block w-full text-gray-300 bg-gray-800 border border-gray-700 rounded-lg cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-violet-600 file:text-white hover:file:bg-violet-700"/>
+                    
+                    <!-- Preview de imagen -->
+                    @if (imagePreview) {
+                        <div class="mt-4 relative">
+                            <img [src]="imagePreview" alt="Preview" class="w-full rounded-lg max-h-64 object-cover"/>
+                            <button
+                                type="button"
+                                (click)="removeImage()"
+                                class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-8 h-8 flex items-center justify-center">
+                                ✕
+                            </button>
+                        </div>
+                    }
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="flex gap-3 pt-4">
+                    <button
+                        type="button"
+                        (click)="closeCreatePostModal()"
+                        [disabled]="isSubmitting"
+                        class="flex-1 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition">
+                        Cancelar
+                    </button>
+                    <button
+                        type="submit"
+                        [disabled]="createPostForm.invalid || isSubmitting"
+                        class="flex-1 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition flex items-center justify-center">
+                        @if (isSubmitting) {
+                            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                            </svg>
+                        } @else {
+                            <span>Publicar</span>
+                        }
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+}

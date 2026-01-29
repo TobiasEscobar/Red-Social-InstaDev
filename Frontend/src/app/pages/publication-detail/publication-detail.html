@@ -1,0 +1,135 @@
+<div class="min-h-screen flex bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+    <div class="w-64 shrink-0 hidden md:block">
+        <app-nav class="fixed top-0 left-0 h-screen w-64"></app-nav>
+    </div>
+
+    <main class="flex-1 p-4 md:p-6 overflow-y-auto max-h-screen">
+        <div class="max-w-3xl mx-auto pb-20">
+            
+            <button (click)="volverHome()" 
+                class="mb-6 text-violet-400 hover:text-violet-300 hover:underline flex items-center gap-2 transition">
+                <span>←</span> Volver a publicaciones
+            </button>
+
+            @if (isLoading) {
+                <div class="flex justify-center items-center py-20">
+                    <svg class="animate-spin h-12 w-12 text-violet-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                </div>
+            }
+
+            @if (!isLoading && publication) {
+                
+                <app-publication-card 
+                    [publication]="publication"
+                    [currentUserId]="currentUserId"
+                    [isAdmin]="isAdmin">
+                </app-publication-card>
+
+                <section class="mt-8">
+                    <h3 class="text-xl font-bold mb-4 text-gray-200 flex items-center gap-2">
+                        Comentarios <span class="text-sm bg-gray-800 px-2 py-0.5 rounded-full text-gray-400">{{ publication.commentsCount || 0 }}</span>
+                    </h3>
+
+                    <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 mb-6 flex gap-3 shadow-lg">
+                        <div class="shrink-0">
+                            <div class="w-10 h-10 rounded-full bg-violet-900/50 flex items-center justify-center text-violet-300 border border-violet-500/30">
+                                💬
+                            </div>
+                        </div>
+                        <div class="flex-1 flex flex-col gap-2">
+                            <textarea 
+                                [(ngModel)]="newComment" 
+                                placeholder="Escribe un comentario..." 
+                                rows="2"
+                                class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none resize-none transition"></textarea>
+                            <div class="flex justify-end">
+                                <button 
+                                    (click)="enviarComentario()"
+                                    [disabled]="!newComment.trim()"
+                                    class="bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-semibold text-sm transition flex items-center gap-2">
+                                    <span>Enviar</span>
+                                    <span class="text-xs">➤</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        @for (comment of comments; track comment._id) {
+                            <div class="group flex gap-4 p-4 rounded-xl transition border border-transparent hover:border-gray-700/50 hover:bg-gray-800/30"
+                                [class.bg-gray-800-20]="editingCommentId === comment._id">
+                                
+                                <img [src]="comment.user?.profilePicture || 'assets/icons/default-avatar.png'" 
+                                    class="w-10 h-10 rounded-full object-cover border border-gray-600 shrink-0">
+                                
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-bold text-violet-200 text-sm">{{ comment.user?.username || 'Usuario' }}</span>
+                                            <span class="text-xs text-gray-500">• {{ comment.createdAt | date:'short' }}</span>
+                                            @if (comment.modified) {
+                                                <span class="text-[10px] text-gray-600 italic">(editado)</span>
+                                            }
+                                        </div>
+
+                                        @if (canModify(comment.user?._id) && editingCommentId !== comment._id) {
+                                            <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button (click)="iniciarEdicion(comment)" class="text-gray-400 hover:text-violet-400 p-1" title="Editar">
+                                                    ✎
+                                                </button>
+                                                <button (click)="borrarComentario(comment._id)" class="text-gray-400 hover:text-red-400 p-1" title="Borrar">
+                                                    ✕
+                                                </button>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    @if (editingCommentId !== comment._id) {
+                                        <p class="text-gray-300 mt-1 text-sm leading-relaxed break-words">{{ comment.message }}</p>
+                                    }
+
+                                    @if (editingCommentId === comment._id) {
+                                        <div class="mt-2">
+                                            <textarea 
+                                                [(ngModel)]="editCommentText" 
+                                                class="w-full bg-gray-900 border border-gray-600 rounded-lg p-2 text-white focus:ring-1 focus:ring-violet-500 outline-none text-sm mb-2"></textarea>
+                                            <div class="flex gap-2">
+                                                <button (click)="guardarEdicion(comment._id)" class="text-xs bg-violet-600 hover:bg-violet-700 text-white px-3 py-1.5 rounded transition">Guardar</button>
+                                                <button (click)="cancelarEdicion()" class="text-xs bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded transition">Cancelar</button>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        @empty {
+                            @if (!loadingComments) {
+                                <div class="text-center py-8 text-gray-500 italic">
+                                    No hay comentarios aún. ¡Sé el primero!
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    @if (hasMoreComments) {
+                        <div class="mt-6 text-center">
+                            <button 
+                                (click)="cargarComentarios(publication._id)"
+                                [disabled]="loadingComments"
+                                class="text-violet-400 hover:text-violet-300 text-sm font-semibold hover:underline disabled:opacity-50 disabled:no-underline">
+                                @if (loadingComments) {
+                                    <span class="animate-pulse">Cargando comentarios...</span>
+                                } @else {
+                                    <span>Ver comentarios anteriores</span>
+                                }
+                            </button>
+                        </div>
+                    }
+                </section>
+            }
+        </div>
+    </main>
+</div>

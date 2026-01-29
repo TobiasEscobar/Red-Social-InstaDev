@@ -1,0 +1,8 @@
+<div *ngIf="isLoading" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
+    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-600"></div>
+    <p class="mt-4 text-gray-600 font-medium">Validando la sesión...</p>
+</div>
+
+<div *ngIf="!isLoading">
+    <router-outlet></router-outlet>
+</div>

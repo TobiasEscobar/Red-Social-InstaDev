@@ -1,0 +1,86 @@
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
+    <div class="bg-gray-900/80 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-700">
+        <h2 class="text-3xl font-bold text-center text-violet-400 mb-6">Bienvenido</h2>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4">
+            <!-- Usuario o correo -->
+            <div>
+                <label class="block text-gray-300 mb-1">Correo o usuario</label>
+                <input
+                type="text"
+                formControlName="user"
+                class="w-full p-3 bg-gray-800 border border-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
+                placeholder="usuario@example.com"
+                />
+
+                @if (user?.touched && user?.invalid) {
+                <p class="text-red-500 text-sm mt-1">Este campo es obligatorio.</p>
+                }
+            </div>
+
+            <!-- Contraseña -->
+            <div>
+                <label class="block text-gray-300 mb-1">Contraseña</label>
+                <input
+                type="password"
+                formControlName="password"
+                class="w-full p-3 bg-gray-800 border border-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
+                placeholder="********"
+                />
+
+                @if (loginForm.get('password')?.touched && loginForm.get('password')?.invalid) {
+                    <div class="mt-1 space-y-1">
+                        @if (loginForm.get('password')?.errors?.['required']) {
+                        <p class="text-red-500 text-sm">La contraseña es obligatoria.</p>
+                        }
+                        @if (loginForm.get('password')?.errors?.['pattern']) {
+                        <p class="text-red-500 text-sm">
+                            Debe tener al menos 8 caracteres, una mayúscula y un número.
+                        </p>
+                        }
+                    </div>
+                }
+
+            </div>
+
+            <!-- Botón -->
+            <button
+                type="submit"
+                [disabled]="loginForm.invalid || isLoading"
+                class="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                @if (isLoading) {
+                    <svg
+                    class="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    >
+                    <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                    ></circle>
+                    <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                    ></path>
+                    </svg>
+                } @else {
+                    <span>Iniciar sesión</span>
+                }
+            </button>
+        </form>
+
+        <p class="text-center text-sm text-gray-400 mt-4">
+            ¿No tenés cuenta?
+            <a href="/registro" class="text-violet-400 hover:text-violet-300 transition">
+            Registrate
+            </a>
+        </p>
+    </div>
+</div>

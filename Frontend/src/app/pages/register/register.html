@@ -1,0 +1,249 @@
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 py-8">
+    <div class="bg-gray-900/80 backdrop-blur-md p-6 rounded-xl shadow-2xl w-full max-w-2xl border border-gray-700 max-h-[95vh] overflow-y-auto">
+        <h2 class="text-3xl font-bold text-center text-violet-400 mb-6">Crear cuenta</h2>
+
+        <form
+            [formGroup]="registerForm"
+            (ngSubmit)="onSubmit()"
+            class="grid grid-cols-1 md:grid-cols-2 gap-4"
+            novalidate>
+            
+            <!-- Nombre -->
+            <div>
+                <label class="block text-gray-300 mb-1">Nombre</label>
+                <input
+                    type="text"
+                    formControlName="name"
+                    maxlength="20"
+                    class="w-full p-3 bg-gray-800 border border-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"/>
+                @if (registerForm.get('name')?.touched && registerForm.get('name')?.invalid) {
+                    <p class="text-red-500 text-sm mt-1">El nombre es obligatorio y debe ir sin números.</p>
+                }
+            </div>
+
+            <!-- Apellido -->
+            <div>
+                <label class="block text-gray-300 mb-1">Apellido</label>
+                <input
+                    type="text"
+                    formControlName="surname"
+                    maxlength="20"
+                    class="w-full p-3 bg-gray-800 border border-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"/>
+                @if (registerForm.get('surname')?.touched && registerForm.get('surname')?.invalid) {
+                    <p class="text-red-500 text-sm mt-1">El apellido es obligatorio y debe ir sin números.</p>
+                }
+            </div>
+
+            <!-- Correo -->
+            <div class="md:col-span-2">
+                <label class="block text-gray-300 mb-1">Correo electrónico</label>
+                <input
+                    type="email"
+                    formControlName="email"
+                    placeholder="usuario@example.com"
+                    class="w-full p-3 bg-gray-800 border border-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"/>
+                @if (registerForm.get('email')?.touched && registerForm.get('email')?.invalid) {
+                    <p class="text-red-500 text-sm mt-1">Correo inválido.</p>
+                }
+            </div>
+
+            <!-- Usuario -->
+            <div>
+                <label class="block text-gray-300 mb-1">Nombre de usuario</label>
+                <input
+                    type="text"
+                    formControlName="username"
+                    class="w-full p-3 bg-gray-800 border border-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"/>
+                @if (registerForm.get('username')?.touched && registerForm.get('username')?.invalid) {
+                    <p class="text-red-500 text-sm mt-1">Debe tener al menos 3 caracteres.</p>
+                }
+            </div>
+
+            <!-- Fecha nacimiento -->
+            <div>
+                <label class="block text-gray-300 mb-1">Fecha de nacimiento</label>
+                <input
+                    type="date"
+                    formControlName="birthdate"
+                    class="w-full p-3 bg-gray-800 border border-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"/>
+                @if (registerForm.get('birthdate')?.touched && registerForm.get('birthdate')?.invalid) {
+                    <p class="text-red-500 text-sm mt-1">Campo obligatorio.</p>
+                }
+            </div>
+
+            <!-- Contraseña -->
+            <div>
+                <label class="block text-gray-300 mb-1">Contraseña</label>
+                <input
+                    type="password"
+                    formControlName="password"
+                    class="w-full p-3 bg-gray-800 border border-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"/>
+                @if (registerForm.get('password')?.touched && registerForm.get('password')?.invalid) {
+                    <div class="mt-1 space-y-1">
+                        @if (registerForm.get('password')?.errors?.['required']) {
+                            <p class="text-red-500 text-sm">La contraseña es obligatoria.</p>
+                        }
+                        @if (registerForm.get('password')?.errors?.['pattern']) {
+                            <p class="text-red-500 text-sm">
+                                Debe tener al menos 8 caracteres, una mayúscula y un número.
+                            </p>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- Repetir contraseña -->
+            <div>
+                <label class="block text-gray-300 mb-1">Repetir contraseña</label>
+                <input
+                    type="password"
+                    formControlName="confirmPassword"
+                    class="w-full p-3 bg-gray-800 border border-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"/>
+                @if (registerForm.get('confirmPassword')?.touched && registerForm.get('confirmPassword')?.value !== registerForm.get('password')?.value) {
+                    <p class="text-red-500 text-sm mt-1">Las contraseñas no coinciden.</p>
+                }
+            </div>
+
+            <!-- Descripción -->
+            <div class="md:col-span-2">
+                <label class="block text-gray-300 mb-1">Descripción breve</label>
+                <textarea
+                    formControlName="description"
+                    rows="3"
+                    class="w-full p-3 bg-gray-800 border border-gray-700 text-white rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    placeholder="Contanos un poco sobre vos..."></textarea>
+            </div>
+
+            <!-- Imagen de perfil con cropper -->
+            <div class="md:col-span-2">
+                <label class="block text-gray-300 mb-2 font-semibold">Imagen de perfil</label>
+                
+                <!-- Input file (oculto) -->
+                <input
+                    id="imageInput"
+                    type="file"
+                    (change)="onFileSelected($event)"
+                    accept="image/*"
+                    class="hidden"/>
+
+                <!-- Botón para seleccionar imagen (solo si no hay imagen) -->
+                @if (!imageSelected && !showCropper) {
+                    <button
+                        type="button"
+                        (click)="changeImage()"
+                        class="w-full py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 rounded-md transition flex items-center justify-center gap-2">
+                        <span>📷</span>
+                        <span>Seleccionar imagen</span>
+                    </button>
+                }
+
+                <!-- Preview de la imagen recortada -->
+                @if (imageSelected && !showCropper) {
+                    <div class="flex flex-col items-center gap-4 p-4 bg-gray-800 rounded-lg border border-gray-700">
+                        <p class="text-gray-300 text-sm">Vista previa de tu foto de perfil:</p>
+                        
+                        <!-- Contenedor circular para la imagen -->
+                        <div class="relative">
+                            <img 
+                                [src]="croppedImage" 
+                                alt="Preview"
+                                class="w-32 h-32 rounded-full object-cover border-4 border-violet-500"/>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="flex gap-3 w-full">
+                            <button
+                                type="button"
+                                (click)="changeImage()"
+                                class="flex-1 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition">
+                                🔄 Cambiar
+                            </button>
+                            <button
+                                type="button"
+                                (click)="removeImage()"
+                                class="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition">
+                                🗑️ Eliminar
+                            </button>
+                        </div>
+                    </div>
+                }
+
+                <p class="text-gray-400 text-xs mt-2">
+                    Máximo 5MB • Recorte: 400x400px • Formatos: JPG, PNG, GIF
+                </p>
+            </div>
+
+            <!-- Botón de registro -->
+            <div class="md:col-span-2 mt-2">
+                <button
+                    type="submit"
+                    [disabled]="registerForm.invalid || isLoading"
+                    class="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                    @if (isLoading) {
+                        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                        </svg>
+                    } @else {
+                        <span>Registrarse</span>
+                    }
+                </button>
+            </div>
+        </form>
+
+        <p class="text-center text-sm text-gray-400 mt-4">
+            ¿Ya tenés cuenta?
+            <a href="/login" class="text-violet-400 hover:text-violet-300 transition">Iniciá sesión</a>
+        </p>
+    </div>
+</div>
+
+<!-- Modal del Image Cropper -->
+@if (showCropper) {
+    <div class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-gray-900 rounded-2xl border border-gray-700 w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <!-- Header -->
+            <div class="border-b border-gray-700 p-4">
+                <h3 class="text-xl font-bold text-violet-400">Recortar imagen de perfil</h3>
+                <p class="text-gray-400 text-sm mt-1">Ajusta tu foto al tamaño perfecto (400x400px)</p>
+            </div>
+
+            <!-- Cropper -->
+            <div class="flex-1 overflow-auto p-4 bg-gray-800">
+                <image-cropper
+                    [imageChangedEvent]="imageChangedEvent"
+                    [maintainAspectRatio]="true"
+                    [aspectRatio]="1"
+                    [resizeToWidth]="400"
+                    [cropperMinWidth]="400"
+                    [onlyScaleDown]="true"
+                    [roundCropper]="false"
+                    format="jpeg"
+                    outputType="both"
+                    [imageQuality]="92"
+                    (imageCropped)="imageCropped($event)"
+                    (imageLoaded)="imageLoaded($event)"
+                    (cropperReady)="cropperReady()"
+                    (loadImageFailed)="loadImageFailed()"
+                    class="w-full">
+                </image-cropper>
+            </div>
+
+            <!-- Footer con botones -->
+            <div class="border-t border-gray-700 p-4 flex gap-3">
+                <button
+                    type="button"
+                    (click)="cancelCrop()"
+                    class="flex-1 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition">
+                    Cancelar
+                </button>
+                <button
+                    type="button"
+                    (click)="confirmCrop()"
+                    class="flex-1 py-3 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-lg transition">
+                    ✓ Confirmar recorte
+                </button>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,73 @@
+<article class="bg-gray-900/80 backdrop-blur-md rounded-xl border border-gray-700 overflow-hidden hover:border-violet-500 transition-all">
+    <div class="p-4 flex items-center justify-between border-b border-gray-700">
+        <div class="flex items-center gap-3">
+            <div class="shrink-0">
+                @if (publication.author?.profileImage) {
+                    <img 
+                        [src]="publication.author?.profileImage" 
+                        alt="Autor"
+                        class="w-10 h-10 rounded-full object-cover border-2 border-violet-400"/>
+                } @else {
+                    <div class="w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center text-white font-bold text-sm border-2 border-violet-400 cursor-default">
+                        {{ publication.author?.username | initials }}
+                    </div>
+                }
+            </div>
+            <div>
+                <p class="font-semibold text-white">{{ publication.author?.username || 'Usuario Desconocido' }}</p>
+                <p class="text-sm text-gray-400">{{ publication.createdAt | timeAgo }}</p>
+            </div>
+        </div>
+
+        @if (canDelete) {
+            <button
+                (click)="borrarPost($event)"
+                class="text-red-400 hover:text-red-300 transition p-2 hover:bg-red-900/20 rounded-lg"
+                title="Eliminar publicación">
+                🗑️
+            </button>
+        }
+    </div>
+
+    <div class="p-4">
+        <h3 class="text-xl font-bold text-violet-300 mb-2">{{ publication.title }}</h3>
+        <p class="text-gray-300 whitespace-pre-wrap">{{ publication.message }}</p>
+    </div>
+
+    @if (publication.imageUrl) {
+        <div class="px-4 pb-4">
+            <img 
+                [src]="publication.imageUrl" 
+                [alt]="publication.title"
+                class="w-full rounded-lg object-cover max-h-96 cursor-pointer hover:opacity-90 transition"
+                (click)="verImagenCompleta($event)"
+                appLazyImage/>
+        </div>
+    }
+
+    <div class="px-4 pb-4 flex items-center justify-between border-t border-gray-700 pt-4">
+        <div class="flex items-center gap-4">
+            <button
+                (click)="alternarLike($event)"
+                [class.text-red-500]="hasLiked"
+                class="flex items-center gap-2 hover:scale-110 transition-transform">
+                <span class="text-2xl">{{ hasLiked ? '❤️' : '🤍' }}</span>
+                
+                <span class="font-semibold">{{ publication.likes?.length || 0 }}</span>
+            </button>
+
+            <button
+                (click)="verComentarios($event)"
+                class="flex items-center gap-2 text-gray-300 hover:text-violet-400 transition">
+                <span class="text-2xl">💬</span>
+                <span class="font-semibold">{{ publication.commentsCount || 0 }}</span>
+            </button>
+        </div>
+
+        <button
+            (click)="verComentarios($event)"
+            class="text-violet-400 hover:text-violet-300 font-semibold transition">
+            Ver publicación →
+        </button>
+    </div>
+</article>
